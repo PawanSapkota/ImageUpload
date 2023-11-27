@@ -2,6 +2,11 @@ import AppError from "../utils/AppError";
 import { AppDataSource } from "../data-source";
 import { Request,Response,NextFunction } from "express";
 import { MultipleImages } from "../entity/Multipleimages";
+import { QueryResult } from "typeorm";
+
+interface Requestcustom extends Request{
+    files:any
+}
 
 
 
@@ -27,10 +32,23 @@ export const getMultipleImagesHandler= async(req:Request,res:Response,next:NextF
 }
 
 
-export const postMultipleImageHandler=async(req:Request,res:Response,next:NextFunction)=>{
+export const postMultipleImageHandler=async(req:Requestcustom,res:Response,next:NextFunction)=>{
     try{
         console.log(req.body,req.files)
-  
+
+        const arrayOfImages =[]
+
+        req.files.map((img:any)=>{
+            arrayOfImages.push(img.filename)
+        })
+        req.body.image = arrayOfImages
+
+        await multipleImagesRepo.save(req.body).then((result:any)=>{
+            res.status(200).json({
+                status:"success",
+                data:result
+            })
+        })
         
 
     }
@@ -38,5 +56,35 @@ export const postMultipleImageHandler=async(req:Request,res:Response,next:NextFu
         next(new AppError(err.statusCode,err.message))
     }
     
+}
+
+
+export const deleteMultipleImages = async(req:Request,res:Response,next:NextFunction)=>{
+    try{
+        // await multipleImagesRepo.findOneBy({id:req.params.id}).then((result:any)=>{
+        //     res.status(200).json({
+        //         status:"success",
+        //         data:result
+        //     })
+
+        // })
+
+        let multipleimages = await multipleImagesRepo.findOneBy({id:req.params.id})
+
+        if (!multipleimages){
+            return next(new AppError(404,"Image with this id not found"))
+        }
+
+        await multipleImagesRepo.remove(multipleimages).then((result:any)=>{
+            res.status(200).json({
+                status:"succes",
+                data:result
+            })
+        })
+
+    }
+    catch(err){
+        next(new AppError(err.statusCode,err.message))
+    }
 }
 

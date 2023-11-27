@@ -1,6 +1,6 @@
 import {Router } from "express"
 import {upload} from "../utils/Fileupload"
-import { postMultipleImageHandler } from "../controller/Multipleimages.controller";
+import { deleteMultipleImages, getMultipleImagesHandler, postMultipleImageHandler } from "../controller/Multipleimages.controller";
 
 const router=Router()
 
@@ -85,7 +85,9 @@ const router=Router()
  *          description: A sucessfull response
  */
 
-router.route("/").post(upload.array("image"),postMultipleImageHandler)
+router.route("/").post(upload.array("image"),postMultipleImageHandler).get(getMultipleImagesHandler);
+
+router.route("/:id").delete(deleteMultipleImages)
 
 
 
